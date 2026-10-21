@@ -1,0 +1,19 @@
+# Real restaurant data never goes into git. Ask the owner before sharing any of it.
+data/raw/*
+!data/raw/.gitkeep
+data/curated/
+
+build/
+__pycache__/
+.pytest_cache/
+.venv/
+
+# Terraform state can contain resource details; keep it local.
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/terraform.tfvars
+terraform/.terraform.lock.hcl.bak
+
+# macOS
+.DS_Store
