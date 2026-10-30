@@ -27,3 +27,32 @@ variable "athena_scan_limit_bytes" {
   type        = number
   default     = 1073741824 # 1 GB, about half a cent per query at most
 }
+
+variable "bedrock_model_id" {
+  description = "Bedrock model or inference profile the analyst uses. Check Bedrock > Model catalog for the exact ID."
+  type        = string
+  default     = "us.anthropic.claude-haiku-4-5-20251001-v1:0"
+}
+
+variable "model_provider" {
+  description = "Where the analyst calls Claude: \"anthropic\" (Anthropic API, key in SSM) or \"bedrock\" (needs Bedrock model access on the account)."
+  type        = string
+  default     = "anthropic"
+
+  validation {
+    condition     = contains(["anthropic", "bedrock"], var.model_provider)
+    error_message = "model_provider must be \"anthropic\" or \"bedrock\"."
+  }
+}
+
+variable "anthropic_model_id" {
+  description = "Claude API model ID used when model_provider = \"anthropic\"."
+  type        = string
+  default     = "claude-haiku-5-5"
+}
+
+variable "anthropic_key_param" {
+  description = "SSM Parameter Store name (SecureString) holding the Anthropic API key. Create it yourself so the key never lands in Terraform state."
+  type        = string
+  default     = "/restaurant-ai-analyst/anthropic-api-key"
+}

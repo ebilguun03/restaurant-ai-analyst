@@ -18,9 +18,10 @@ flowchart LR
     C -.logs + rejected-file alarm.-> H[CloudWatch]
 ```
 
-**Phase 2 (next):** an AI agent (Claude on Amazon Bedrock) answers plain-English
-questions by writing read-only SQL against this warehouse, exposed through an MCP server.
-**Phase 3:** an evaluation set of test questions to measure accuracy, cost and safety.
+**Phase 2 (built):** an AI analyst. The owner asks a question in a chat page; an agent
+(Claude, via the Anthropic API or Amazon Bedrock) writes SQL, a guard checks it is read-only, Athena runs it, and the
+agent answers with real numbers. Every question is logged, and a 22-question eval set measures
+accuracy: **22/22 correct, median 3.8 s per answer** ([results](evals/RESULTS.md)). See [docs/PHASE2.md](docs/PHASE2.md).
 
 ## What it does well
 - **Data quality gate:** every file must add up to Toast's own grand total, or it's rejected.

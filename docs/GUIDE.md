@@ -138,7 +138,7 @@ dimensions to answer questions.
 **Findings already in the data (Jan–Mar 2026), good for interviews:**
 - Net sales grew about 13% from January ($66.2K) to March ($74.9K).
 - Specialty Rolls hold the top 4 items by revenue.
-- Voids nearly doubled in February ($900 → $1,788). That's a question worth asking the owner.
+- Voids nearly doubled from January to February. That's a question worth asking the owner.
 
 ## Step 8. Write it up (day 9–10)
 
@@ -160,7 +160,7 @@ Everything is pay-per-use, so idle cost is close to $0. If you're pausing for we
   month's file in **under [X] seconds**.
 - Added a **data-quality gate** that reconciles every file to the POS's own totals **to the
   cent** and an **idempotent DynamoDB ledger** so retries never double count.
-- Modeled **3 months of real sales data (~19,800 items, $213K net)** as a **star schema**,
+- Modeled **3 months of real sales data (about 20K items sold)** as a **star schema**,
   with SQL analyses that surfaced **13% sales growth** and a **2x jump in voids**.
 - Defined all infrastructure in **Terraform** with **CI in GitHub Actions** and **cost
   guardrails** (per-query scan limit, budget alerts), running at **under $[X]/month**.

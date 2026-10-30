@@ -37,3 +37,10 @@ A 1 GB per-query scan limit in the Athena workgroup, 7-day expiry on query resul
 ## 8. Real data stays out of git
 The sales data belongs to the restaurant. Tests use a small fake export with the same
 layout, so the repo can be public without exposing anything.
+
+## 9. Model provider behind an adapter (Anthropic API now, Bedrock later)
+The agent was written against Bedrock's Converse API. AWS then declined Bedrock access for Claude on
+this new account (usage history too short). Instead of rewriting the agent, a ~100-line adapter offers
+the same `converse()` call and sends it to Anthropic's API. The provider is one Terraform variable; the
+API key lives in SSM Parameter Store as a SecureString, readable only by the analyst Lambda.
+Trade-off: an extra secret to manage and a second vendor bill, in exchange for shipping now.

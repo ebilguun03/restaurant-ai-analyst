@@ -2,6 +2,7 @@
 data/raw/*
 !data/raw/.gitkeep
 data/curated/
+evals/questions.local.json
 
 build/
 __pycache__/

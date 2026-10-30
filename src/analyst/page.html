@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restaurant AI Analyst</title>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#1d1d1b; --muted:#6b6a65; --line:#e4e2dc; --accent:#b4432a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  main { max-width:760px; margin:0 auto; padding:32px 16px 140px; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 24px; }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+  .chip { border:1px solid var(--line); background:var(--card); border-radius:999px; padding:6px 12px; font-size:14px; cursor:pointer; }
+  .chip:hover { border-color:var(--accent); }
+  .msg { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+  .q { background:transparent; border:none; padding:4px 0; font-weight:600; }
+  .meta { color:var(--muted); font-size:13px; margin-top:8px; }
+  details { margin-top:8px; font-size:13px; }
+  pre { background:#f1efe9; padding:10px; border-radius:8px; overflow-x:auto; white-space:pre-wrap; }
+  .err { color:var(--accent); }
+  form { position:fixed; left:0; right:0; bottom:0; background:var(--bg); border-top:1px solid var(--line); padding:16px; }
+  .row { max-width:760px; margin:0 auto; display:flex; gap:8px; }
+  input { flex:1; font:inherit; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:var(--card); }
+  button { font:inherit; padding:12px 18px; border:none; border-radius:10px; background:var(--ink); color:#fff; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:wait; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Restaurant AI Analyst</h1>
+  <p class="sub">Ask about Ozora Izakaya's sales (Jan–Mar 2026). Every answer comes from a live SQL query.</p>
+  <div class="chips">
+    <span class="chip">What were total sales in March?</span>
+    <span class="chip">Which 5 dishes earned the most?</span>
+    <span class="chip">Which menu group grew fastest from February to March?</span>
+    <span class="chip">Where are we losing the most money to voids?</span>
+  </div>
+  <div id="log"></div>
+</main>
+<form id="f">
+  <div class="row">
+    <input id="q" maxlength="500" placeholder="Ask a question about sales…" autocomplete="off">
+    <button id="b">Ask</button>
+  </div>
+</form>
+<script>
+const log = document.getElementById("log"), q = document.getElementById("q"), b = document.getElementById("b");
+function getKey() {
+  let k = null;
+  try { k = sessionStorage.getItem("ak"); } catch (e) {}
+  if (!k) { k = prompt("Access key:"); try { sessionStorage.setItem("ak", k || ""); } catch (e) {} }
+  return k || "";
+}
+function add(cls, html) { const d = document.createElement("div"); d.className = "msg " + cls; d.innerHTML = html; log.appendChild(d); d.scrollIntoView({behavior:"smooth"}); return d; }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+async function send(text) {
+  add("q", esc(text));
+  const pending = add("", "<span class='meta'>Thinking and querying the data…</span>");
+  b.disabled = true;
+  try {
+    const r = await fetch("ask", { method:"POST", headers:{ "content-type":"application/json", "x-access-key": getKey() }, body: JSON.stringify({ question:text }) });
+    const data = await r.json();
+    if (r.status === 401) { try { sessionStorage.removeItem("ak"); } catch (e) {} }
+    if (!r.ok) { pending.innerHTML = "<span class='err'>" + esc(data.error || "Something went wrong") + "</span>"; return; }
+    const sql = data.queries.map(s => "<pre>" + esc(s.sql) + (s.error ? "\n-- blocked/failed: " + esc(s.error) : "\n-- " + s.rows + " rows") + "</pre>").join("");
+    pending.innerHTML = esc(data.answer).replace(/\n/g, "<br>") +
+      "<div class='meta'>" + data.queries.length + " quer" + (data.queries.length === 1 ? "y" : "ies") + " · " + data.seconds + "s</div>" +
+      (data.queries.length ? "<details><summary>Show the SQL it ran</summary>" + sql + "</details>" : "");
+  } catch (e) {
+    pending.innerHTML = "<span class='err'>Network error. Try again.</span>";
+  } finally { b.disabled = false; }
+}
+document.getElementById("f").addEventListener("submit", e => { e.preventDefault(); const t = q.value.trim(); if (t) { q.value = ""; send(t); } });
+document.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => send(c.textContent)));
+</script>
+</body>
+</html>
